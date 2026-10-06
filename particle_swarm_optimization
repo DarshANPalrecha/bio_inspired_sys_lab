@@ -1,0 +1,79 @@
+import random
+batt_state = [random.randint(-1,1) for i in range(24)]
+#0>idle 1>charge -1>discharge
+
+
+
+
+def calculate_soc(batt_state,
+                  initial_soc=0.50,
+                  capacity=100,
+                  charge_power=20,
+                  discharge_power=20,
+                  eta_charge=0.95,
+                  eta_discharge=0.95,
+                  dt=1):
+
+    soc = initial_soc
+    soc_history = [soc]
+
+    for state in batt_state:
+
+        if state == 1:
+            # charging
+            soc += (charge_power * eta_charge * dt) / capacity
+
+        elif state == -1:
+            # discharging
+            soc -= (discharge_power * dt) / (eta_discharge * capacity)
+
+        # keep SOC inside physical limits
+        soc = max(0, min(1, soc))
+
+        soc_history.append(soc)
+
+    return soc_history
+
+def calculate_degradation(batt_state,
+                          battery_capacity=100,
+                          charge_power=20,
+                          discharge_power=20,
+                          cycle_life=3000,
+                          dt=1):
+
+    throughput = 0
+
+    for state in batt_state:
+
+        if state == 1:
+            throughput += charge_power * dt
+
+        elif state == -1:
+            throughput += discharge_power * dt
+
+    lifetime_throughput = cycle_life * battery_capacity
+
+    degradation = throughput / lifetime_throughput
+
+    remaining_capacity = battery_capacity * (1 - degradation)
+
+    return degradation, remaining_capacity
+
+deg_f=100
+rem_cap_f=0
+
+for i in range(10):
+    batt_state = [random.randint(-1,1) for i in range(24)]
+    a,b=calculate_degradation(batt_state,
+                          battery_capacity=100,
+                          charge_power=20,
+                          discharge_power=20,
+                          cycle_life=3000,
+                          dt=1)
+    if a<deg_f:
+        deg_f=a
+        rem_cap_f=b
+
+print("battery degardation =",round(deg_f*100,3),"%")
+print("remaining_capacity after 24 hrs:",rem_cap_f)
+
