@@ -1,9 +1,8 @@
 import random
 batt_state = [random.randint(-1,1) for i in range(24)]
-#0>idle 1>charge -1>discharge
-
-
-
+# 0->idle
+# 1->charge 
+# -1->discharge
 
 def calculate_soc(batt_state,
                   initial_soc=0.50,
